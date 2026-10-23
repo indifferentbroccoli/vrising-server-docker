@@ -1,0 +1,25 @@
+services:
+  vrising:
+    build: .
+    container_name: vrising
+    environment:
+      SERVER_NAME: "V Rising Server"
+      SAVE_NAME: "world1"
+      UPDATE_ON_START: "true"
+      STEAM_BRANCH: "public"
+      BACKUPS_TO_KEEP: "2"
+      ENABLE_MODS: "false"
+      BEPINEX_VERSION: "1.733.2"
+    volumes:
+      - .\server:/data/server
+      - .\saves:/data/saves             
+      - .\config\bepinex:/data/config/bepinex
+      - .\config\game:/data/config/game
+      - .\plugins:/data/plugins
+      - .\backups:/data/backups
+    ports:
+      - "9876:9876/udp"
+      - "9877:9877/udp"
+      - "25575:25575/tcp"
+    stop_grace_period: 60s
+    restart: unless-stopped
