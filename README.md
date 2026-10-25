@@ -27,7 +27,7 @@ Copy the `.env.example` file to `.env`, fill in your values, then use either `do
 
 ```yaml
 services:
-  enshrouded:
+  vrising:
     image: <image to be added>
     restart: unless-stopped
     container_name: vrising
