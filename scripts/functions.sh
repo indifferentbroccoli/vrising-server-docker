@@ -1,53 +1,5 @@
 #!/bin/bash
-
-#================
-# Log Definitions
-#================
-export LINE='\n'                        # Line Break
-export RESET='\033[0m'                  # Text Reset
-export WhiteText='\033[0;37m'           # White
-
-# Bold
-export RedBoldText='\033[1;31m'         # Red
-export GreenBoldText='\033[1;32m'       # Green
-export YellowBoldText='\033[1;33m'      # Yellow
-export CyanBoldText='\033[1;36m'        # Cyan
-#================
-# End Log Definitions
-#================
-
-LogInfo()
-{
-  Log "$1" "$WhiteText"
-}
-
-LogWarn()
-{
-  Log "$1" "$YellowBoldText"
-}
-
-LogError()
-{
-  Log "$1" "$RedBoldText"
-}
-
-LogSuccess()
-{
-  Log "$1" "$GreenBoldText"
-}
-
-LogAction()
-{
-  Log "$1" "$CyanBoldText" "====" "===="
-}
-
-Log() {
-  local message="${1-}"
-  local color="${2-}"
-  local prefix="${3-}"
-  local suffix="${4-}"
-  printf "$color%s$RESET$LINE" "$prefix$message$suffix"
-}
+source "/home/steam/server/logging.sh"
 
 log_cycle() {
   if [[ -f "$LOG_FILE" ]]; then
@@ -69,16 +21,6 @@ update_json() {
 }
 
 steamcmd() { /opt/steamcmd/steamcmd.sh "$@"; }
-
-link_dir() {
-  local real=$1 link=$2
-  mkdir -p "$real" "$(dirname "$link")"
-  if [[ -d "$link" && ! -L "$link" ]]; then
-    cp -rn "$link"/. "$real"/ 2>/dev/null || true
-    rm -rf "$link"
-  fi
-  ln -sfn "$real" "$link"
-}
 
 local_buildid() {
   grep -Po '"buildid"\s+"\K\d+' "$SERVER_DIR/steamapps/appmanifest_${APP_ID}.acf" 2>/dev/null || echo 0
@@ -116,6 +58,7 @@ update_server() {
 
 enable_disable_mods() {
   BEPINEX_MARKER="$SERVER_DIR/BepInEx/.installed-version"
+  BEPINEX_VERSION="${BEPINEX_VERSION:-1.733.2}"
 
   if [[ "$ENABLE_MODS" == "true" ]]; then
       if [[ -z "$BEPINEX_VERSION" && ! -d "$SERVER_DIR/BepInEx/core" ]]; then
