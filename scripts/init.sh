@@ -1,4 +1,5 @@
 #!/bin/bash
+source "/home/steam/server/logging.sh"
 source "/home/steam/server/functions.sh"
 
 cat /branding
