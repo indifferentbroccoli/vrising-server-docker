@@ -13,5 +13,5 @@ services:
       - "9876:9876/udp"
       - "9877:9877/udp"
       - "25575:25575/tcp"
-    stop_grace_period: 60s
+    stop_grace_period: 90s
     restart: unless-stopped
