@@ -3,12 +3,7 @@ services:
     build: .
     container_name: vrising
     volumes:
-      - .\server:/data/server
-      - .\saves:/data/saves             
-      - .\config\bepinex:/data/config/bepinex
-      - .\config\game:/data/config/game
-      - .\plugins:/data/plugins
-      - .\backups:/data/backups
+      - ./vrising-data:/data/server-files
     ports:
       - "9876:9876/udp"
       - "9877:9877/udp"
