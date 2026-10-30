@@ -28,7 +28,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
     WINEARCH=win64 \
     WINEPREFIX=/home/steam/.wine \
     WINEDEBUG=-all \
-    XDG_RUNTIME_DIR=/tmp/runtime-steam
+    WINEDLLOVERRIDES="mscoree,mshtml="
 
 COPY --from=rcon-cli_builder /build/gorcon /usr/bin/rcon-cli
 
@@ -49,7 +49,7 @@ RUN dpkg --add-architecture i386 \
     && rm -rf /var/lib/apt/lists/*
 
 RUN useradd -m -s /bin/bash steam \
-    && mkdir -p /opt/steamcmd /data/server \
+    && mkdir -p /opt/steamcmd /data/server-files \
     && curl -fsSL https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz \
         | tar -xz -C /opt/steamcmd \
     && chown -R steam:steam /opt/steamcmd /data
@@ -68,22 +68,16 @@ USER steam
 RUN /opt/steamcmd/steamcmd.sh +quit || true \
     && wineboot --init && wineserver -w
 
-ENV SERVER_DIR=/data/server \
+ENV SERVER_DIR=/data/server-files \
     STEAM_BRANCH=public \
-    UPDATE_ON_START=true \
-    BACKUPS_TO_KEEP=2 \
-    SERVER_NAME="Indifferent Broccoli V Rising Server" \
-    SAVE_NAME=world1 \
-    ENABLE_MODS=false \
-    RCON_PORT=25575 \
-    BEPINEX_VERSION=1.733.2 \
     SHUTDOWN_TIMEOUT=90
 
-WORKDIR /data/server
+WORKDIR /data/server-files
+
 HEALTHCHECK --start-period=5m \
     CMD pgrep "VRisingServer" > /dev/null || exit 1
 
-VOLUME ["/data/server", "/data/saves", "/data/config/game", "/data/config/bepinex", "/data/plugins", "/data/backups"]
+VOLUME ["/data/server-files"]
 EXPOSE 9876/udp 9877/udp 25575/tcp
 
 ENTRYPOINT ["/usr/bin/bash", "--", "/home/steam/server/init.sh"]
