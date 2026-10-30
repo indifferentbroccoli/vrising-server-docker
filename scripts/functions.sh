@@ -3,7 +3,7 @@ source "/home/steam/server/logging.sh"
 
 log_cycle() {
   if [[ -f "$LOG_FILE" ]]; then
-    cp "$LOG_FILE" "$SAVES_DIR/logs/VRisingServer-$(date +%Y%m%d-%H%M%S).log"
+    cp "$LOG_FILE" "$LOG_FOLDER/VRisingServer-$(date +%Y%m%d-%H%M%S).log"
     : > "$LOG_FILE"
   fi
 }
@@ -59,6 +59,7 @@ update_server() {
 enable_disable_mods() {
   BEPINEX_MARKER="$SERVER_DIR/BepInEx/.installed-version"
   BEPINEX_VERSION="${BEPINEX_VERSION:-1.733.2}"
+  ENABLE_MODS="${ENABLE_MODS:-false}"
 
   if [[ "$ENABLE_MODS" == "true" ]]; then
       if [[ -z "$BEPINEX_VERSION" && ! -d "$SERVER_DIR/BepInEx/core" ]]; then
@@ -71,7 +72,6 @@ enable_disable_mods() {
           LogInfo "Installing BepInExPack_V_Rising $BEPINEX_VERSION (was: $INSTALLED)"
           local bepinex_url="https://thunderstore.io/package/download/BepInEx/BepInExPack_V_Rising/${BEPINEX_VERSION}/"
           tmp=$(mktemp -d)
-          mkdir -p "$CONFIG_DIR/bepinex" "$PLUGINS_DIR"
           curl -fsSL "$bepinex_url" -o "$tmp/bepinex.zip"
           unzip -q "$tmp/bepinex.zip" -d "$tmp/pack"
 
@@ -93,9 +93,6 @@ enable_disable_mods() {
       else
           printf '\n[Logging.Console]\nEnabled = false\n' >> "$BEPINEX_CFG"
       fi
-
-      link_dir "$PLUGINS_DIR" "$SERVER_DIR/BepInEx/plugins"
-      link_dir "$CONFIG_DIR/bepinex" "$SERVER_DIR/BepInEx/config"
   else
     export WINEDLLOVERRIDES="${WINEDLLOVERRIDES:+$WINEDLLOVERRIDES;}winhttp=b"
     LogInfo "Mods disabled"
@@ -104,9 +101,13 @@ enable_disable_mods() {
 
 backup_server() {
   mkdir -p "$BACKUP_DIR"
+    if [[ ! -d "$DATA_DIR/Saves/v4/$SAVE_NAME" ]]; then
+    LogWarn "World '$SAVE_NAME' does not exist, skipping backup"
+    return 0
+  fi
   local name="$SAVE_NAME-$(date +%Y%m%d-%H%M%S).tar.gz"
   LogInfo "Backing up current server to $name"
-  tar -czf "$BACKUP_DIR/$name" -C "$SAVES_DIR" .
+  tar -czf "$BACKUP_DIR/$name" -C "$DATA_DIR/Saves/v4/$SAVE_NAME" .
   ls -1t "$BACKUP_DIR"/$SAVE_NAME-*.tar.gz 2>/dev/null \
     | tail -n +$((BACKUPS_TO_KEEP + 1)) | xargs -r rm -f
 }

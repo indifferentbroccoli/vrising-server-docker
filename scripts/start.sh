@@ -1,14 +1,16 @@
-#!/usr/bin/env bash
+#!/bin/bash
+source "/home/steam/server/logging.sh"
 source "/home/steam/server/functions.sh"
 set -euo pipefail
 
-SERVER_DIR=/data/server
-SAVES_DIR=/data/saves
-CONFIG_DIR=/data/config
-PLUGINS_DIR=/data/plugins
-BACKUP_DIR=/data/backups
-LOG_FILE="$SAVES_DIR/logs/VRisingServer.log"
+DATA_DIR=$SERVER_DIR/data
+CONFIG_DIR=$DATA_DIR/Settings
+BACKUP_DIR=$SERVER_DIR/backups
+LOG_FOLDER=$SERVER_DIR/logs
+LOG_FILE="$LOG_FOLDER/VRisingServer.log"
 RCON_PASSWORD="${RCON_PASSWORD:-}"
+
+log_cycle
 
 # Configure RCON settings
 if [[ -z "${RCON_PASSWORD}" ]]; then
@@ -19,18 +21,17 @@ fi
 LogInfo "Configuring RCON settings"
 cat >/home/steam/server/rcon.yml  <<EOL
 default:
-  address: "127.0.0.1:${RCON_PORT}"
+  address: "127.0.0.1:${RCON_PORT:-25575}"
   password: ${RCON_PASSWORD}
 EOL
 
-mkdir -p "$SAVES_DIR/logs" "$CONFIG_DIR/game" "$BACKUP_DIR"
+mkdir -p "$BACKUP_DIR" "$DATA_DIR" "$CONFIG_DIR" "$LOG_FOLDER"
 
-link_dir "$CONFIG_DIR/game" "$SAVES_DIR/Settings"
 SETTINGS_SRC="$SERVER_DIR/VRisingServer_Data/StreamingAssets/Settings"
 for f in ServerHostSettings.json ServerGameSettings.json; do
-  if [[ ! -f "$CONFIG_DIR/game/$f" && -f "$SETTINGS_SRC/$f" ]]; then
+  if [[ ! -f "$CONFIG_DIR/$f" && -f "$SETTINGS_SRC/$f" ]]; then
     LogInfo "Seeding default $f"
-    cp "$SETTINGS_SRC/$f" "$CONFIG_DIR/game/$f"
+    cp "$SETTINGS_SRC/$f" "$CONFIG_DIR/$f"
   fi
 done
 
@@ -40,7 +41,7 @@ enable_disable_mods
 SERVER_PID=""
 TAIL_PID=""
 
-HOST_SETTINGS="$CONFIG_DIR/game/ServerHostSettings.json"
+HOST_SETTINGS="$CONFIG_DIR/ServerHostSettings.json"
 
 update_json "$HOST_SETTINGS" '.Rcon.Password = $pw | .Rcon.Enabled = true' \
   --arg pw "$RCON_PASSWORD"
@@ -50,7 +51,7 @@ trap shutdown SIGTERM SIGINT
 backup_server
 
 launch=(wine "$SERVER_DIR/VRisingServer.exe"
-  -persistentDataPath "$SAVES_DIR"
+  -persistentDataPath "$DATA_DIR"
   -serverName "$SERVER_NAME"
   -saveName "$SAVE_NAME"
   -logFile -)
@@ -61,7 +62,6 @@ else
   LogInfo "Xvfb not installed, launching without a virtual display"
 fi
 
-log_cycle
 LogInfo "Starting: ${launch[*]}"
 cd "$SERVER_DIR"
 "${launch[@]}" > >(tee -a "$LOG_FILE") 2>&1 &
