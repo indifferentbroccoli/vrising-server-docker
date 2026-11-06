@@ -19,7 +19,7 @@ RUN dpkg --add-architecture i386 \
         | gpg --dearmor -o /etc/apt/keyrings/winehq.gpg \
     && echo "deb [signed-by=/etc/apt/keyrings/winehq.gpg] https://dl.winehq.org/wine-builds/debian/ bookworm main" \
         > /etc/apt/sources.list.d/winehq.list \
-    && apt-get update && apt-get install -y --no-install-recommends winehq-stable \
+    && apt-get update && apt-get install -y --install-recommends winehq-stable \
     && apt-get purge -y gnupg && apt-get autoremove -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
@@ -55,7 +55,6 @@ ENV HOME=/home/steam \
     WINEARCH=win64 \
     WINEPREFIX=/home/steam/.wine \
     WINEDEBUG=-all \
-    WINEDLLOVERRIDES="mscoree,mshtml=" \
     SERVER_DIR=/data/server-files \
     STEAM_BRANCH=public \
     UPDATE_ON_START=true \

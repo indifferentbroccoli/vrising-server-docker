@@ -45,6 +45,7 @@ services:
     restart: unless-stopped
     container_name: vrising
     stop_grace_period: 30s
+    tty: true
     ports:
       - 9876:9876/udp
       - 9877:9877/udp
@@ -68,6 +69,7 @@ docker run -d \
     --restart unless-stopped \
     --name vrising \
     --stop-timeout 30 \
+    -t \
     -p 9876:9876/udp \
     -p 9877:9877/udp \
     -p 25575:25575/tcp \

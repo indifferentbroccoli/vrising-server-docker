@@ -124,23 +124,12 @@ install_bepinex() {
 
 configure_mods() {
   if [ "$ENABLE_MODS" != "true" ]; then
-    export WINEDLLOVERRIDES="$WINEDLLOVERRIDES;winhttp=b"
+    export WINEDLLOVERRIDES="winhttp=b"
     return
   fi
 
   LogAction "Enabling mods"
   install_bepinex
-  export WINEDLLOVERRIDES="$WINEDLLOVERRIDES;winhttp=n,b"
-
-  local cfg=$SERVER_DIR/BepInEx/config/BepInEx.cfg
-  if grep -q '^\[Logging.Console\]' "$cfg" 2>/dev/null; then
-    sed -i '/^\[Logging.Console\]/,/^\[/ {
-      s/^Enabled = .*/Enabled = true/
-      s/^StandardOutType = .*/StandardOutType = StandardOut/
-    }' "$cfg"
-  else
-    printf '\n[Logging.Console]\nEnabled = true\nStandardOutType = StandardOut\n' >> "$cfg"
-  fi
-
+  export WINEDLLOVERRIDES="winhttp=n,b"
   LogSuccess "Mods enabled (BepInEx $BEPINEX_VERSION)"
 }

@@ -12,8 +12,11 @@ args=(
   -persistentDataPath "$DATA_DIR"
   -serverName "$SERVER_NAME"
   -saveName "$SAVE_NAME"
-  -logFile -
 )
+
+if [ "$ENABLE_MODS" != "true" ]; then
+  args+=(-logFile -)
+fi
 
 LogAction "Starting server"
 LogInfo "Arguments: ${args[*]}"
