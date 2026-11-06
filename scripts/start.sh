@@ -21,4 +21,8 @@ fi
 LogAction "Starting server"
 LogInfo "Arguments: ${args[*]}"
 
+if [ -t 0 ]; then
+  stty cols 200 rows 50
+fi
+
 exec xvfb-run --auto-servernum wine VRisingServer.exe "${args[@]}" > >(tee -a "$LOG_FILE") 2>&1
