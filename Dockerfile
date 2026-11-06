@@ -34,6 +34,16 @@ RUN curl -fsSL \
     chmod +x /depotdownloader/DepotDownloader && \
     rm /tmp/dd.zip
 
+ARG RCON_VERSION=0.10.3
+ARG RCON_SHA256=6962a641ebf9a5957bd0cda1b8acf3e34a23686ae709f6c6a14ac3898521a5cc
+RUN curl -fsSL \
+    "https://github.com/gorcon/rcon-cli/releases/download/v${RCON_VERSION}/rcon-${RCON_VERSION}-amd64_linux.tar.gz" \
+    -o /tmp/rcon.tar.gz && \
+    echo "${RCON_SHA256}  /tmp/rcon.tar.gz" | sha256sum -c - && \
+    tar --no-same-owner -xzf /tmp/rcon.tar.gz -C /tmp && \
+    mv /tmp/rcon-${RCON_VERSION}-amd64_linux/rcon /usr/bin/rcon-cli && \
+    rm -rf /tmp/rcon.tar.gz /tmp/rcon-${RCON_VERSION}-amd64_linux
+
 RUN useradd -m -u 1000 -s /bin/bash steam
 
 LABEL maintainer="support@indifferentbroccoli.com" \

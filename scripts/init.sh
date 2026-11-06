@@ -25,7 +25,10 @@ fi
 
 stop_server() {
   LogWarn "Stopping server..."
-  pkill -INT -f VRisingServer.exe
+  if ! rcon-cli -c "$RCON_CONFIG" 'shutdown 0 "Server is shutting down"'; then
+    LogWarn "Could not shut down over RCON, killing the server"
+    wineserver -k
+  fi
   wait "$server_pid"
 }
 trap stop_server SIGTERM

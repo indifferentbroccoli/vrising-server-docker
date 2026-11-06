@@ -5,6 +5,7 @@ DATA_DIR=$SERVER_DIR/data
 CONFIG_DIR=$DATA_DIR/Settings
 LOG_DIR=$SERVER_DIR/logs
 LOG_FILE=$LOG_DIR/VRisingServer.log
+RCON_CONFIG=$HOME/rcon.yml
 
 LogInfo()    { printf '%s\n' "$1"; }
 LogWarn()    { printf '\033[1;33m%s\033[0m\n' "$1"; }
@@ -67,6 +68,12 @@ configure_rcon() {
   jq --arg pw "$RCON_PASSWORD" --arg port "$RCON_PORT" \
     '.Rcon.Enabled = true | .Rcon.Password = $pw | .Rcon.Port = ($port | tonumber)' \
     "$file" > "$tmp" && mv "$tmp" "$file"
+
+  cat > "$RCON_CONFIG" <<EOF
+default:
+  address: "127.0.0.1:$RCON_PORT"
+  password: "$RCON_PASSWORD"
+EOF
   LogInfo "RCON enabled on port $RCON_PORT"
 }
 
@@ -127,9 +134,12 @@ configure_mods() {
 
   local cfg=$SERVER_DIR/BepInEx/config/BepInEx.cfg
   if grep -q '^\[Logging.Console\]' "$cfg" 2>/dev/null; then
-    sed -i '/^\[Logging.Console\]/,/^\[/ s/^Enabled = .*/Enabled = false/' "$cfg"
+    sed -i '/^\[Logging.Console\]/,/^\[/ {
+      s/^Enabled = .*/Enabled = true/
+      s/^StandardOutType = .*/StandardOutType = StandardOut/
+    }' "$cfg"
   else
-    printf '\n[Logging.Console]\nEnabled = false\n' >> "$cfg"
+    printf '\n[Logging.Console]\nEnabled = true\nStandardOutType = StandardOut\n' >> "$cfg"
   fi
 
   LogSuccess "Mods enabled (BepInEx $BEPINEX_VERSION)"
