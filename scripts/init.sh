@@ -25,7 +25,7 @@ fi
 
 stop_server() {
   LogWarn "Stopping server..."
-  if ! rcon-cli -c "$RCON_CONFIG" 'shutdown 0 "Server is shutting down"'; then
+  if ! rcon-cli -c "$RCON_CONFIG" 'shutdown 1 "Server is shutting down in 1 minute"'; then
     LogWarn "Could not shut down over RCON, killing the server"
     wineserver -k
   fi
