@@ -33,6 +33,6 @@ stop_server() {
 }
 trap stop_server SIGTERM
 
-./start.sh &
+./start.sh <&0 &
 server_pid=$!
 wait "$server_pid"
