@@ -32,6 +32,10 @@ Windows-only and runs via Wine.
 
 Copy the .env.example file to a new file called .env. Then use either `docker compose` or `docker run`
 
+> [!IMPORTANT]
+> The server runs as user and group 1000, not root. The folder you mount must be owned by that user, for example `sudo chown -R 1000:1000 ./server-files`.
+> To use a different id, set `user: "1001:1001"` in docker compose or `--user 1001:1001` with docker run, and give your folder to that id instead.
+
 ### Docker compose
 
 ```yaml

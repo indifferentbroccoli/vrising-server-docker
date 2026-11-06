@@ -66,7 +66,6 @@ ENV HOME=/home/steam \
     WINEPREFIX=/home/steam/.wine \
     WINEDEBUG=-all \
     WINEDLLOVERRIDES="mscoree,mshtml=" \
-    XDG_RUNTIME_DIR=/tmp/runtime-steam \
     SERVER_DIR=/data/server-files \
     STEAM_BRANCH=public \
     UPDATE_ON_START=true \
@@ -81,14 +80,11 @@ COPY ./scripts /home/steam/server/
 
 COPY branding /branding
 
-RUN mkdir -p /data/server-files /tmp/runtime-steam && \
-    chown steam:steam /data/server-files /tmp/runtime-steam && \
-    chmod 700 /tmp/runtime-steam && \
+RUN mkdir -p /data/server-files && \
+    chmod 777 /home/steam /data/server-files && \
     chmod +x /home/steam/server/*.sh
 
 USER steam
-
-RUN wineboot --init && wineserver -w
 
 WORKDIR /home/steam/server
 
