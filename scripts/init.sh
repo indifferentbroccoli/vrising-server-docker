@@ -1,36 +1,30 @@
 #!/bin/bash
-source "/home/steam/server/logging.sh"
-source "/home/steam/server/functions.sh"
+source /home/steam/server/functions.sh
 
 cat /branding
 
-if [[ ! -f "$SERVER_DIR/VRisingServer.exe" ]]; then
-    LogError "No server found, installing branch '$STEAM_BRANCH'"
-    update_server
-elif [[ "$UPDATE_ON_START" == "true" ]]; then
-    LOCAL=$(local_buildid)
-    REMOTE=$(remote_buildid)
-    LogInfo "Installed build: $LOCAL / Available build: ${REMOTE:-unknown}"
-    if [[ -n "$REMOTE" && "$REMOTE" != "$LOCAL" ]]; then
-        backup_server
-        update_server || LogError "Update failed - starting existing build $LOCAL"
-    else
-        LogInfo "Server is up to date"
-    fi
+if [ "$UPDATE_ON_START" = "true" ] || ! server_is_installed; then
+  if ! install_server; then
+    server_is_installed || exit 1
+    LogWarn "Update failed, starting the installed version"
+  fi
 else
-    LogInfo "UPDATE_ON_START=false, keeping build $(local_buildid)"
+  LogWarn "UPDATE_ON_START is false, skipping server update"
 fi
 
-term_handler() {
-    if ! shutdown; then
-        kill -SIGTERM "$(pidof VRisingServer.exe)" 2>/dev/null || true
-    fi
-    tail --pid="$killpid" -f 2>/dev/null
+stop_server() {
+  LogWarn "Stopping server..."
+  if ! rcon 'shutdown 1 "Server is shutting down in 1 minute"'; then
+    LogWarn "Could not reach the server over RCON"
+  fi
+  if ! timeout "$SHUTDOWN_TIMEOUT" tail --pid="$server_pid" -f /dev/null; then
+    LogWarn "Server did not stop within ${SHUTDOWN_TIMEOUT}s, killing it"
+    wineserver -k
+  fi
+  wait "$server_pid"
 }
+trap stop_server SIGTERM
 
-trap 'term_handler' SIGTERM
-
-/home/steam/server/start.sh &
-
-killpid="$!"
-wait "$killpid"
+./start.sh &
+server_pid=$!
+wait "$server_pid"

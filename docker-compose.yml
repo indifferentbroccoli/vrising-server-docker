@@ -2,11 +2,13 @@ services:
   vrising:
     build: .
     container_name: vrising
+    env_file:
+      - .env
     volumes:
-      - ./vrising-data:/data/server-files
+      - ./server-files:/data/server-files
     ports:
       - "9876:9876/udp"
       - "9877:9877/udp"
       - "25575:25575/tcp"
-    stop_grace_period: 90s
+    stop_grace_period: 120s
     restart: unless-stopped

@@ -1,51 +1,57 @@
 <!-- markdownlint-disable-next-line -->
 ![marketing_assets_banner](https://github.com/user-attachments/assets/b8b4ae5c-06bb-46a7-8d94-903a04595036)
+[![GitHub License](https://img.shields.io/github/license/indifferentbroccoli/vrising-server-docker?style=for-the-badge&color=6aa84f)](https://github.com/indifferentbroccoli/vrising-server-docker/blob/main/LICENSE)
+[![GitHub Release](https://img.shields.io/github/v/release/indifferentbroccoli/vrising-server-docker?style=for-the-badge&color=6aa84f)](https://github.com/indifferentbroccoli/vrising-server-docker/releases)
+[![GitHub Repo stars](https://img.shields.io/github/stars/indifferentbroccoli/vrising-server-docker?style=for-the-badge&color=6aa84f)](https://github.com/indifferentbroccoli/vrising-server-docker)
 [![Discord](https://img.shields.io/discord/798321161082896395?style=for-the-badge&label=Discord&labelColor=5865F2&color=6aa84f)](https://discord.gg/indifferentbroccoli)
+[![Docker Pulls](https://img.shields.io/docker/pulls/indifferentbroccoli/vrising-server-docker?style=for-the-badge&color=6aa84f)](https://hub.docker.com/r/indifferentbroccoli/vrising-server-docker)
 
-Game server hosting · Fast RAM · High-speed internet · Eat lag for breakfast
+Game server hosting
 
-[Try our VRising server hosting free for 2 days!](https://indifferentbroccoli.com/v-rising-server-hosting)
+Fast RAM, high-speed internet
 
-# V Rising Dedicated Server Docker
+Eat lag for breakfast
 
-A Docker container for running an V Rising dedicated server. The server binary is
+[Try our V Rising server hosting free for 2 days!](https://indifferentbroccoli.com/v-rising-server-hosting)
+
+## V Rising Dedicated Server Docker
+
+A Docker container for running a V Rising dedicated server. Server files are downloaded with
+[DepotDownloader](https://github.com/SteamRE/DepotDownloader). The server binary is
 Windows-only and runs via Wine.
 
 ## Server Requirements
 
-| Resource | Minimum | Recommended | Maximum |
-|----------|---------|-------------|---------|
-| CPU      | 2 cores @ 3.2 GHz | 4 cores @ 3.2 GHz | 4 cores @ 3.2 GHz |
-| RAM      | 4 GB    | 16 GB       | 32 GB   |
-| Storage  | 5 GB SSD | 20 GB SSD | 40 GB SSD |
+| Resource | Minimum           | Recommended       |
+|----------|-------------------|-------------------|
+| CPU      | 2 cores @ 3.2 GHz | 4 cores @ 3.2 GHz |
+| RAM      | 4GB               | 16GB              |
+| Storage  | 5GB SSD           | 20GB SSD          |
 
 ## How to use
 
-Copy the `.env.example` file to `.env`, fill in your values, then use either `docker compose` or `docker run`.
+Copy the .env.example file to a new file called .env. Then use either `docker compose` or `docker run`
 
-### Docker Compose
+### Docker compose
 
 ```yaml
 services:
   vrising:
-    image: <image to be added>
+    image: indifferentbroccoli/vrising-server-docker
     restart: unless-stopped
     container_name: vrising
-    stop_grace_period: 30s
+    stop_grace_period: 120s
     ports:
-      - "9876:9876/udp"
-      - "9877:9877/udp"
-      - "25575:25575/tcp"
+      - 9876:9876/udp
+      - 9877:9877/udp
+      - 25575:25575/tcp
     env_file:
       - .env
     volumes:
-      - .\server:/data/server
-      - .\saves:/data/saves             
-      - .\config\bepinex:/data/config/bepinex
-      - .\config\game:/data/config/game
-      - .\plugins:/data/plugins
-      - .\backups:/data/backups
+      - ./server-files:/data/server-files
 ```
+
+Then run:
 
 ```bash
 docker compose up -d
@@ -57,36 +63,45 @@ docker compose up -d
 docker run -d \
     --restart unless-stopped \
     --name vrising \
-    --stop-timeout 60 \
+    --stop-timeout 120 \
     -p 9876:9876/udp \
     -p 9877:9877/udp \
     -p 25575:25575/tcp \
     --env-file .env \
-    -v .\server:/data/server \
-    -v .\saves:/data/saves  \
-    -v .\config\bepinex:/data/config/bepinex \
-    -v .\config\game:/data/config/game \
-    -v .\plugins:/data/plugins \
-    -v .\backups:/data/backups \
-    <image to be added>
+    -v ./server-files:/data/server-files \
+    indifferentbroccoli/vrising-server-docker
 ```
 
 ## Environment Variables
 
-| Variable | Default | Info |
-|----------|---------|------|
-| SERVER_NAME | Indifferent Broccoli V Rising Server | Display name of the server |
-| SAVE_NAME | world1 | Name of the Save Folder |
-| UPDATE_ON_START | true | Download and validate server files on every startup. Set to `false` to skip. |
-| STEAM_BRANCH | public | Can be configured to public or beta branches for new updates. |
-| BACKUPS_TO_KEEP | 2 | Number of startup backups to keep. |
-| ENABLE_MODS | false | `true/false` Install the BepInEx plugin for mods. |
-| BEPINEX_VERSION | 1.733.2 | `Default` 1.733.2 which is the current latest version of BepInEx installed. |
-| RCON_PASSWORD | CHANGEME | Password generated randomly on startup unless a specific password is provided. |
+| Variable          | Default                              | Info                                                                              |
+|-------------------|--------------------------------------|-----------------------------------------------------------------------------------|
+| SERVER_NAME       | Indifferent Broccoli V Rising Server | Name shown in the server browser                                                  |
+| SAVE_NAME         | world1                               | Name of the world save folder                                                     |
+| UPDATE_ON_START   | true                                 | Download and validate server files on every startup. Set to `false` to skip      |
+| STEAM_BRANCH      | public                               | Steam branch to install                                                           |
+| ENABLE_MODS       | false                                | Install BepInEx so the server can load mods                                       |
+| BEPINEX_VERSION   | latest                               | BepInEx version to install. `latest` updates on startup, or pin one, e.g. `1.733.2` |
+| RCON_PASSWORD     |                                      | RCON password. A random one is generated on each startup if left empty           |
+| RCON_PORT         | 25575                                | RCON port                                                                         |
 
+## Port Forwarding
 
-## About
+Forward the following ports to your server:
 
-This is a Dockerized V Rising dedicated server maintained by [indifferent broccoli](https://indifferentbroccoli.com/). We offer [managed V Rising server hosting](https://indifferentbroccoli.com/v-rising-server-hosting) if you'd rather not self-host.
+* `9876/udp` - Game port
+* `9877/udp` - Query port
 
+`25575/tcp` (RCON) only needs to be forwarded if you want to use RCON from outside your network.
 
+## Volumes
+
+* `/data/server-files` - Server installation files, world saves (`data/Saves`), settings (`data/Settings`), logs (`logs/`) and mods (`BepInEx/plugins`)
+
+The settings files (`ServerHostSettings.json` and `ServerGameSettings.json`) are copied from the defaults on first startup.
+
+## Support
+
+For issues and questions:
+* GitHub Issues: [Report an issue](https://github.com/indifferentbroccoli/vrising-server-docker/issues)
+* Game Server Hosting: [indifferentbroccoli.com](https://indifferentbroccoli.com)

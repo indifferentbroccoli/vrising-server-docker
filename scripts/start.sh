@@ -1,77 +1,21 @@
 #!/bin/bash
-source "/home/steam/server/logging.sh"
-source "/home/steam/server/functions.sh"
-set -euo pipefail
+source /home/steam/server/functions.sh
 
-DATA_DIR=$SERVER_DIR/data
-CONFIG_DIR=$DATA_DIR/Settings
-BACKUP_DIR=$SERVER_DIR/backups
-LOG_FOLDER=$SERVER_DIR/logs
-LOG_FILE="$LOG_FOLDER/VRisingServer.log"
-RCON_PASSWORD="${RCON_PASSWORD:-}"
+cd "$SERVER_DIR" || exit 1
 
-log_cycle
+rotate_log
+seed_settings
+configure_rcon
+configure_mods
 
-# Configure RCON settings
-if [[ -z "${RCON_PASSWORD}" ]]; then
-    RCON_PASSWORD=$(head -c 32 /dev/urandom | base64 | tr -dc 'A-Za-z0-9' | head -c 24)
-    LogInfo "No RCON_PASSWORD set - generated an internal one for this run"
-fi
-
-LogInfo "Configuring RCON settings"
-cat >/home/steam/server/rcon.yml  <<EOL
-default:
-  address: "127.0.0.1:${RCON_PORT:-25575}"
-  password: ${RCON_PASSWORD}
-EOL
-
-mkdir -p "$BACKUP_DIR" "$DATA_DIR" "$CONFIG_DIR" "$LOG_FOLDER"
-
-SETTINGS_SRC="$SERVER_DIR/VRisingServer_Data/StreamingAssets/Settings"
-for f in ServerHostSettings.json ServerGameSettings.json; do
-  if [[ ! -f "$CONFIG_DIR/$f" && -f "$SETTINGS_SRC/$f" ]]; then
-    LogInfo "Seeding default $f"
-    cp "$SETTINGS_SRC/$f" "$CONFIG_DIR/$f"
-  fi
-done
-
-LogInfo "Configuring mods"
-enable_disable_mods
-
-SERVER_PID=""
-TAIL_PID=""
-
-HOST_SETTINGS="$CONFIG_DIR/ServerHostSettings.json"
-
-update_json "$HOST_SETTINGS" '.Rcon.Password = $pw | .Rcon.Enabled = true' \
-  --arg pw "$RCON_PASSWORD"
-
-trap shutdown SIGTERM SIGINT
-
-backup_server
-
-launch=(wine "$SERVER_DIR/VRisingServer.exe"
+args=(
   -persistentDataPath "$DATA_DIR"
   -serverName "$SERVER_NAME"
   -saveName "$SAVE_NAME"
-  -logFile -)
+  -logFile -
+)
 
-if command -v xvfb-run >/dev/null 2>&1; then
-  launch=(xvfb-run --auto-servernum "${launch[@]}")
-else
-  LogInfo "Xvfb not installed, launching without a virtual display"
-fi
+LogAction "Starting server"
+LogInfo "Arguments: ${args[*]}"
 
-LogInfo "Starting: ${launch[*]}"
-cd "$SERVER_DIR"
-"${launch[@]}" > >(tee -a "$LOG_FILE") 2>&1 &
-SERVER_PID=$!
-
-set +e
-wait "$SERVER_PID"
-status=$?
-set -e
-
-LogInfo "Server exited with status $status"
-kill "$TAIL_PID" 2>/dev/null || true
-exit "$status"
+exec xvfb-run --auto-servernum wine VRisingServer.exe "${args[@]}" > >(tee -a "$LOG_FILE") 2>&1
