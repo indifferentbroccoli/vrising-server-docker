@@ -44,7 +44,7 @@ services:
     image: indifferentbroccoli/vrising-server-docker
     restart: unless-stopped
     container_name: vrising
-    stop_grace_period: 120s
+    stop_grace_period: 30s
     ports:
       - 9876:9876/udp
       - 9877:9877/udp
@@ -67,7 +67,7 @@ docker compose up -d
 docker run -d \
     --restart unless-stopped \
     --name vrising \
-    --stop-timeout 120 \
+    --stop-timeout 30 \
     -p 9876:9876/udp \
     -p 9877:9877/udp \
     -p 25575:25575/tcp \
@@ -86,7 +86,7 @@ docker run -d \
 | STEAM_BRANCH      | public                               | Steam branch to install                                                           |
 | ENABLE_MODS       | false                                | Install BepInEx so the server can load mods                                       |
 | BEPINEX_VERSION   | latest                               | BepInEx version to install. `latest` updates on startup, or pin one, e.g. `1.733.2` |
-| RCON_PASSWORD     |                                      | RCON password. A random one is generated on each startup if left empty           |
+| RCON_PASSWORD     |                                      | RCON password. If empty, one is generated and saved in `data/Settings/ServerHostSettings.json` |
 | RCON_PORT         | 25575                                | RCON port                                                                         |
 
 ## Port Forwarding
@@ -95,8 +95,7 @@ Forward the following ports to your server:
 
 * `9876/udp` - Game port
 * `9877/udp` - Query port
-
-`25575/tcp` (RCON) only needs to be forwarded if you want to use RCON from outside your network.
+* `25575/tcp` - RCON port (only if you use RCON)
 
 ## Support
 

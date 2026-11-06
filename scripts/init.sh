@@ -25,13 +25,7 @@ fi
 
 stop_server() {
   LogWarn "Stopping server..."
-  if ! rcon 'shutdown 1 "Server is shutting down in 1 minute"'; then
-    LogWarn "Could not reach the server over RCON"
-  fi
-  if ! timeout "$SHUTDOWN_TIMEOUT" tail --pid="$server_pid" -f /dev/null; then
-    LogWarn "Server did not stop within ${SHUTDOWN_TIMEOUT}s, killing it"
-    wineserver -k
-  fi
+  pkill -INT -f VRisingServer.exe
   wait "$server_pid"
 }
 trap stop_server SIGTERM

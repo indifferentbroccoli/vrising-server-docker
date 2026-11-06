@@ -4,7 +4,7 @@ services:
     image: indifferentbroccoli/vrising-server-docker
     restart: unless-stopped
     container_name: vrising
-    stop_grace_period: 120s
+    stop_grace_period: 30s
     ports:
       - 9876:9876/udp
       - 9877:9877/udp

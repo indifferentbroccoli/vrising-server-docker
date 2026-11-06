@@ -1,21 +1,3 @@
-# BUILD RCON-CLI
-FROM golang:1.23.1-alpine AS rcon-cli_builder
-
-ARG RCON_VERSION="0.10.3"
-ARG RCON_TGZ_SHA1SUM=33ee8077e66bea6ee097db4d9c923b5ed390d583
-
-WORKDIR /build
-
-SHELL ["/bin/ash", "-o", "pipefail", "-c"]
-
-ENV CGO_ENABLED=0
-RUN wget -q https://github.com/gorcon/rcon-cli/archive/refs/tags/v${RCON_VERSION}.tar.gz -O rcon.tar.gz \
-    && echo "${RCON_TGZ_SHA1SUM}" rcon.tar.gz | sha1sum -c - \
-    && tar -xzf rcon.tar.gz \
-    && mv rcon-cli-${RCON_VERSION}/* ./ \
-    && go build -v ./cmd/gorcon
-
-# BUILD THE SERVER IMAGE
 FROM --platform=linux/amd64 debian:bookworm-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -52,8 +34,6 @@ RUN curl -fsSL \
     chmod +x /depotdownloader/DepotDownloader && \
     rm /tmp/dd.zip
 
-COPY --from=rcon-cli_builder /build/gorcon /usr/bin/rcon-cli
-
 RUN useradd -m -u 1000 -s /bin/bash steam
 
 LABEL maintainer="support@indifferentbroccoli.com" \
@@ -73,8 +53,7 @@ ENV HOME=/home/steam \
     SAVE_NAME=world1 \
     ENABLE_MODS=false \
     BEPINEX_VERSION=latest \
-    RCON_PORT=25575 \
-    SHUTDOWN_TIMEOUT=90
+    RCON_PORT=25575
 
 COPY ./scripts /home/steam/server/
 

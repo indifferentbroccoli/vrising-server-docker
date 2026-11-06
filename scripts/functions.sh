@@ -5,7 +5,6 @@ DATA_DIR=$SERVER_DIR/data
 CONFIG_DIR=$DATA_DIR/Settings
 LOG_DIR=$SERVER_DIR/logs
 LOG_FILE=$LOG_DIR/VRisingServer.log
-RCON_CONFIG=$HOME/rcon.yml
 
 LogInfo()    { printf '%s\n' "$1"; }
 LogWarn()    { printf '\033[1;33m%s\033[0m\n' "$1"; }
@@ -52,33 +51,23 @@ seed_settings() {
   done
 }
 
-update_json() {
-  local file=$1 filter=$2
-  shift 2
-  local tmp
-  tmp=$(mktemp "$file.XXXX")
-  jq "$@" "$filter" "$file" > "$tmp" && mv "$tmp" "$file"
-}
-
 configure_rcon() {
+  local file=$CONFIG_DIR/ServerHostSettings.json
+  local tmp
+
+  if [ -z "$RCON_PASSWORD" ]; then
+    RCON_PASSWORD=$(jq -r '.Rcon.Password // empty' "$file")
+  fi
   if [ -z "$RCON_PASSWORD" ]; then
     RCON_PASSWORD=$(head -c 32 /dev/urandom | base64 | tr -dc 'A-Za-z0-9' | head -c 24)
-    LogInfo "No RCON_PASSWORD set, generated one for this run"
+    LogInfo "No RCON_PASSWORD set, generated one and saved it in data/Settings/ServerHostSettings.json"
   fi
 
-  update_json "$CONFIG_DIR/ServerHostSettings.json" \
+  tmp=$(mktemp "$file.XXXX")
+  jq --arg pw "$RCON_PASSWORD" --arg port "$RCON_PORT" \
     '.Rcon.Enabled = true | .Rcon.Password = $pw | .Rcon.Port = ($port | tonumber)' \
-    --arg pw "$RCON_PASSWORD" --arg port "$RCON_PORT"
-
-  cat > "$RCON_CONFIG" <<EOF
-default:
-  address: "127.0.0.1:$RCON_PORT"
-  password: "$RCON_PASSWORD"
-EOF
-}
-
-rcon() {
-  rcon-cli -c "$RCON_CONFIG" "$@"
+    "$file" > "$tmp" && mv "$tmp" "$file"
+  LogInfo "RCON enabled on port $RCON_PORT"
 }
 
 latest_bepinex_version() {
