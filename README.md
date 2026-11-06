@@ -94,12 +94,6 @@ Forward the following ports to your server:
 
 `25575/tcp` (RCON) only needs to be forwarded if you want to use RCON from outside your network.
 
-## Volumes
-
-* `/data/server-files` - Server installation files, world saves (`data/Saves`), settings (`data/Settings`), logs (`logs/`) and mods (`BepInEx/plugins`)
-
-The settings files (`ServerHostSettings.json` and `ServerGameSettings.json`) are copied from the defaults on first startup.
-
 ## Support
 
 For issues and questions:

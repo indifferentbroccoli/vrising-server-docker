@@ -1,14 +1,15 @@
+---
 services:
   vrising:
-    build: .
+    image: indifferentbroccoli/vrising-server-docker
+    restart: unless-stopped
     container_name: vrising
+    stop_grace_period: 120s
+    ports:
+      - 9876:9876/udp
+      - 9877:9877/udp
+      - 25575:25575/tcp
     env_file:
       - .env
     volumes:
       - ./server-files:/data/server-files
-    ports:
-      - "9876:9876/udp"
-      - "9877:9877/udp"
-      - "25575:25575/tcp"
-    stop_grace_period: 120s
-    restart: unless-stopped
