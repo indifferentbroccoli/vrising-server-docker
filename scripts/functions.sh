@@ -48,6 +48,11 @@ seed_settings() {
     if [ ! -f "$CONFIG_DIR/$file" ] && [ -f "$defaults/$file" ]; then
       LogInfo "Creating default $file"
       cp "$defaults/$file" "$CONFIG_DIR/$file"
+      if [ "$file" = ServerHostSettings.json ]; then
+        local tmp
+        tmp=$(mktemp "$CONFIG_DIR/$file.XXXX")
+        jq '.ListOnSteam = true | .ListOnEOS = true' "$CONFIG_DIR/$file" > "$tmp" && mv "$tmp" "$CONFIG_DIR/$file"
+      fi
     fi
   done
 }
