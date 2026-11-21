@@ -88,6 +88,9 @@ docker run -d \
 | STEAM_BRANCH      | public                               | Steam branch to install                                                           |
 | ENABLE_MODS       | false                                | Install BepInEx so the server can load mods                                       |
 | BEPINEX_VERSION   | latest                               | BepInEx version to install. `latest` updates on startup, or pin one, e.g. `1.733.2` |
+| GAME_PORT         | 9876                                 |                                                                                   |
+| QUERY_PORT        | 9877                                 |                                                                                   |
+| MAX_PLAYERS       | 40                                   |                                                                                   |
 | RCON_PASSWORD     |                                      | RCON password. If empty, one is generated and saved in `data/Settings/ServerHostSettings.json` |
 | RCON_PORT         | 25575                                | RCON port                                                                         |
 

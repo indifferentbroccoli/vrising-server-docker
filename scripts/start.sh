@@ -5,6 +5,7 @@ cd "$SERVER_DIR" || exit 1
 
 rotate_log
 seed_settings
+configure_host_settings
 configure_rcon
 configure_mods
 

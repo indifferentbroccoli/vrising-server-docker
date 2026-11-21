@@ -62,6 +62,9 @@ ENV HOME=/home/steam \
     SAVE_NAME=world1 \
     ENABLE_MODS=false \
     BEPINEX_VERSION=latest \
+    GAME_PORT=9876 \
+    QUERY_PORT=9877 \
+    MAX_PLAYERS=40 \
     RCON_PORT=25575
 
 COPY ./scripts /home/steam/server/

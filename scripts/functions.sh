@@ -52,6 +52,16 @@ seed_settings() {
   done
 }
 
+configure_host_settings() {
+  local file=$CONFIG_DIR/ServerHostSettings.json
+  local tmp
+
+  tmp=$(mktemp "$file.XXXX")
+  jq --arg port "$GAME_PORT" --arg query "$QUERY_PORT" --arg max "$MAX_PLAYERS" \
+    '.Port = ($port | tonumber) | .QueryPort = ($query | tonumber) | .MaxConnectedUsers = ($max | tonumber)' \
+    "$file" > "$tmp" && mv "$tmp" "$file"
+}
+
 configure_rcon() {
   local file=$CONFIG_DIR/ServerHostSettings.json
   local tmp
