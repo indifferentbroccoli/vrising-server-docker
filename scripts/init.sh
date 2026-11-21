@@ -9,6 +9,9 @@ if [ ! -w "$SERVER_DIR" ]; then
   exit 1
 fi
 
+export XDG_RUNTIME_DIR=/tmp/runtime-$(id -u)
+mkdir -p -m 700 "$XDG_RUNTIME_DIR"
+
 if [ ! -f "$WINEPREFIX/system.reg" ]; then
   LogAction "Setting up Wine"
   wineboot --init && wineserver -w
